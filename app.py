@@ -324,12 +324,12 @@ MODEL_WEIGHTS_PATH = 'celestic_weights.weights.h5'
 CLASS_NAMES_PATH = 'class_names.pkl'
 BACKGROUND_IMAGE_PATH = 'background.gif'
 IMAGE_SIZE = 256
-CHANNELS = 3
-N_CLASSES = 8 # Make sure this matches the number of constellations you trained on
+CHANNELS = 3  # <-- ENSURE THIS IS 3, NOT 1
+N_CLASSES = 8 
 
 # This function builds the exact same model structure you used for training
 def build_model():
-    input_shape = (IMAGE_SIZE, IMAGE_SIZE, CHANNELS)
+    input_shape = (IMAGE_SIZE, IMAGE_SIZE, CHANNELS) # This will now be (256, 256, 3)
     
     # --- Base Model (EfficientNetB0) ---
     base_model = tf.keras.applications.EfficientNetB0(
@@ -339,7 +339,7 @@ def build_model():
     )
     base_model.trainable = False
 
-    # --- Full Model with Preprocessing and Augmentation ---
+    # --- Full Model with Preprocessing ---
     model = tf.keras.models.Sequential([
         tf.keras.layers.InputLayer(input_shape=input_shape),
         tf.keras.layers.Lambda(tf.keras.applications.efficientnet.preprocess_input),
