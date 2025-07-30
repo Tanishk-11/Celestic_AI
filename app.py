@@ -324,14 +324,13 @@ MODEL_WEIGHTS_PATH = 'celestic_weights.weights.h5'
 CLASS_NAMES_PATH = 'class_names.pkl'
 BACKGROUND_IMAGE_PATH = 'background.gif'
 IMAGE_SIZE = 256
-CHANNELS = 3  # <-- ENSURE THIS IS 3, NOT 1
+CHANNELS = 3  # <-- THE FIX IS HERE. THIS MUST BE 3.
 N_CLASSES = 8 
 
-# This function builds the exact same model structure you used for training
 def build_model():
-    input_shape = (IMAGE_SIZE, IMAGE_SIZE, CHANNELS) # This will now be (256, 256, 3)
+    """Builds the model architecture to match the trained weights."""
+    input_shape = (IMAGE_SIZE, IMAGE_SIZE, CHANNELS)
     
-    # --- Base Model (EfficientNetB0) ---
     base_model = tf.keras.applications.EfficientNetB0(
         input_shape=input_shape,
         include_top=False,
@@ -339,7 +338,6 @@ def build_model():
     )
     base_model.trainable = False
 
-    # --- Full Model with Preprocessing ---
     model = tf.keras.models.Sequential([
         tf.keras.layers.InputLayer(input_shape=input_shape),
         tf.keras.layers.Lambda(tf.keras.applications.efficientnet.preprocess_input),
@@ -379,7 +377,6 @@ def preprocess_image(image_pil, image_size=256):
     return img_batch
 
 # --- 4. CUSTOM CSS FOR BACKGROUND AND STYLING ---
-# (This section remains the same)
 @st.cache_data
 def get_base64_of_bin_file(bin_file):
     with open(bin_file, 'rb') as f:
@@ -417,7 +414,6 @@ def set_css_background(image_path):
     st.markdown(page_bg_img, unsafe_allow_html=True)
 
 # --- 5. STREAMLIT APP INTERFACE ---
-# (This section remains the same)
 st.set_page_config(page_title="CelesticAI", layout="wide")
 set_css_background(BACKGROUND_IMAGE_PATH)
 
@@ -425,16 +421,21 @@ set_css_background(BACKGROUND_IMAGE_PATH)
 st.sidebar.title("CelesticAI Controls")
 st.sidebar.write("Upload an image of the night sky to identify a constellation.")
 uploaded_file = st.sidebar.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+
 if uploaded_file is not None:
     st.sidebar.header("Your Uploaded Image")
     sidebar_image = Image.open(uploaded_file)
     st.sidebar.image(sidebar_image, use_container_width=True)
+
 st.sidebar.header("About this Project")
-st.sidebar.info("This is a deep learning project...")
+st.sidebar.info(
+    "This is a deep learning project that uses a pre-trained EfficientNet model to classify images of constellations."
+)
 
 # Main Page
 st.title("🔭 Constellation Detector")
 st.write("---")
+
 if uploaded_file is None:
     st.info("Please upload an image using the panel on the left to begin analysis.", icon="🌠")
 else:
