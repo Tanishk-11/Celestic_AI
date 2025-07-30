@@ -190,13 +190,13 @@ import numpy as np
 from PIL import Image
 import pickle
 import base64
-
+  
 # --- 1. LOAD SAVED MODEL AND CLASS NAMES ---
 MODEL_PATH = 'celestic.keras'
 CLASS_NAMES_PATH = 'class_names.pkl'
 BACKGROUND_IMAGE_PATH = 'background.gif'
 
-@st.cache_resource
+
 def load_keras_model():
     custom_objects = {"preprocess_input": tf.keras.applications.efficientnet.preprocess_input}
     model = tf.keras.models.load_model(MODEL_PATH, custom_objects=custom_objects, compile=False)
