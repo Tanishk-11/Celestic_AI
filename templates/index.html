@@ -1,0 +1,104 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Constellation Detector</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #0c0a1a; /* Dark space background */
+            color: #e5e7eb;
+        }
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+        .glass-panel {
+            background: rgba(23, 23, 39, 0.6); /* Slightly lighter glass effect */
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .file-input-button::file-selector-button {
+            font-weight: bold;
+            color: #e5e7eb;
+            background-color: #4a5568;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .file-input-button::file-selector-button:hover {
+            background-color: #2d3748;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div class="w-full max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <!-- Left Control Panel -->
+        <div class="md:col-span-1 glass-panel rounded-2xl p-6 flex flex-col h-full">
+            <h2 class="text-2xl font-bold font-orbitron text-cyan-300 mb-4">CelestiAI Controls</h2>
+            <p class="text-gray-400 text-sm mb-6">Upload an image of the night sky to identify a constellation.</p>
+            
+            <form action="/predict/" method="post" enctype="multipart/form-data" class="mb-6">
+                <label for="file-upload" class="block text-gray-300 mb-2">Choose an image...</label>
+                <input id="file-upload" type="file" name="file" accept="image/png, image/jpeg, image/jpg" required
+                       class="file-input-button block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold mb-4">
+                <button type="submit" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold font-orbitron py-2 px-8 rounded-full transition duration-300 shadow-lg">
+                    Analyze
+                </button>
+            </form>
+
+            <div class="mt-auto">
+                {% if image_base64 %}
+                <div class="mt-4">
+                    <h3 class="text-lg font-semibold text-gray-300 mb-2">Your Uploaded Image:</h3>
+                    <img src="data:image/jpeg;base64,{{ image_base64 }}" alt="Uploaded Constellation" class="rounded-lg w-full h-auto object-cover">
+                </div>
+                {% endif %}
+                <div class="mt-6 pt-4 border-t border-gray-700">
+                    <h3 class="text-lg font-bold text-cyan-400">About this Project</h3>
+                    <p class="text-gray-400 text-sm mt-2">
+                        This is a deep learning project that uses a pre-trained EfficientNet model to classify images of constellations.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Main Panel -->
+        <div class="md:col-span-2 glass-panel rounded-2xl p-8 flex flex-col items-center justify-center text-center">
+            <h1 class="text-4xl md:text-5xl font-bold font-orbitron text-cyan-300 tracking-widest mb-6">
+                🔭 Constellation Detector
+            </h1>
+            
+            {% if prediction %}
+            <!-- Show Prediction Result -->
+            <div class="w-full">
+                <h2 class="text-2xl font-bold font-orbitron text-cyan-400 mb-4">Analysis Result</h2>
+                <div class="bg-gray-900/50 p-6 rounded-lg inline-block">
+                    <p class="text-gray-400 text-sm">PREDICTED CONSTELLATION</p>
+                    <p class="text-5xl font-bold text-white font-orbitron tracking-wide">{{ prediction.class_name }}</p>
+                    <p class="text-cyan-300 text-xl mt-2">{{ prediction.confidence }} Confidence</p>
+                </div>
+            </div>
+
+            {% else %}
+            <!-- Show Default GIF -->
+            <div class="w-full max-w-md">
+                 <p class="text-cyan-300 text-lg mb-4">Please upload an image to begin analysis.</p>
+                 <img src="/static/background.gif" alt="Constellation animation" class="rounded-lg w-full">
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</body>
+</html>
