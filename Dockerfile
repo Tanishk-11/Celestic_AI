@@ -21,5 +21,5 @@ COPY . .
 EXPOSE 5000
 
 # Define the command to run your application using Gunicorn
-# Gunicorn is a production-ready web server for Python applications
-CMD ["gunicorn", "--workers", "2", "--threads", "4", "--bind", "0.0.0.0:5000", "app:app"]
+# Using a single worker to conserve memory on Render's free tier
+CMD ["gunicorn", "--workers", "1", "--bind", "0.0.0.0:5000", "app:app"]
