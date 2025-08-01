@@ -1,6 +1,16 @@
-venv/
-env/
+# .dockerignore
+
+# Ignore Python cache files
 __pycache__/
 *.pyc
+
+# Ignore local virtual environment
+.venv
+venv/
+env/
+
+# Ignore local development files
 .git
-.vscode/
+.vscode
+Dockerfile
+.dockerignore

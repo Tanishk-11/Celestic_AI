@@ -14,6 +14,7 @@
             font-family: 'Roboto', sans-serif;
             background-color: #0c0a1a; /* Dark space background */
             color: #e5e7eb;
+            background-image: url('https://www.transparenttextures.com/patterns/stardust.png');
         }
         .font-orbitron {
             font-family: 'Orbitron', sans-serif;
@@ -37,6 +38,13 @@
         .file-input-button::file-selector-button:hover {
             background-color: #2d3748;
         }
+        details > summary {
+            cursor: pointer;
+            list-style: none; /* Hide the default marker */
+        }
+        details > summary::-webkit-details-marker {
+            display: none; /* Hide the default marker in Chrome */
+        }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
@@ -48,53 +56,63 @@
             <h2 class="text-2xl font-bold font-orbitron text-cyan-300 mb-4">CelestiAI Controls</h2>
             <p class="text-gray-400 text-sm mb-6">Upload an image of the night sky to identify a constellation.</p>
             
-            <form action="/predict/" method="post" enctype="multipart/form-data" class="mb-6">
+            <form action="/predict" method="post" enctype="multipart/form-data" class="mb-6">
                 <label for="file-upload" class="block text-gray-300 mb-2">Choose an image...</label>
-                <input id="file-upload" type="file" name="file" accept="image/png, image/jpeg, image/jpg" required
-                       class="file-input-button block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold mb-4">
-                <button type="submit" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold font-orbitron py-2 px-8 rounded-full transition duration-300 shadow-lg">
-                    Analyze
+                <input id="file-upload" type="file" name="file" accept="image/png, image/jpeg, image/jpg" required class="file-input-button block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-cyan-900/50 file:text-cyan-300 hover:file:bg-cyan-700/50">
+                <button type="submit" class="mt-4 w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded-full transition-colors duration-300">
+                    Analyze Sky
                 </button>
             </form>
 
-            <div class="mt-auto">
-                {% if image_base64 %}
-                <div class="mt-4">
-                    <h3 class="text-lg font-semibold text-gray-300 mb-2">Your Uploaded Image:</h3>
-                    <img src="data:image/jpeg;base64,{{ image_base64 }}" alt="Uploaded Constellation" class="rounded-lg w-full h-auto object-cover">
-                </div>
-                {% endif %}
-                <div class="mt-6 pt-4 border-t border-gray-700">
-                    <h3 class="text-lg font-bold text-cyan-400">About this Project</h3>
-                    <p class="text-gray-400 text-sm mt-2">
-                        This is a deep learning project that uses a pre-trained EfficientNet model to classify images of constellations.
-                    </p>
-                </div>
+            {% if error %}
+            <div class="bg-red-500/20 border border-red-500 text-red-300 px-4 py-3 rounded-lg relative" role="alert">
+                <strong class="font-bold">Error:</strong>
+                <span class="block sm:inline">{{ error }}</span>
             </div>
+            {% endif %}
         </div>
 
-        <!-- Right Main Panel -->
-        <div class="md:col-span-2 glass-panel rounded-2xl p-8 flex flex-col items-center justify-center text-center">
-            <h1 class="text-4xl md:text-5xl font-bold font-orbitron text-cyan-300 tracking-widest mb-6">
-                🔭 Constellation Detector
-            </h1>
+        <!-- Right Display Panel -->
+        <div class="md:col-span-2 glass-panel rounded-2xl p-6 flex flex-col items-center justify-center">
+            {% if prediction_data %}
+            <!-- Show Prediction Results -->
+            <h2 class="text-3xl font-bold font-orbitron text-cyan-300 mb-4">Analysis Complete</h2>
             
-            {% if prediction %}
-            <!-- Show Prediction Result -->
-            <div class="w-full">
-                <h2 class="text-2xl font-bold font-orbitron text-cyan-400 mb-4">Analysis Result</h2>
-                <div class="bg-gray-900/50 p-6 rounded-lg inline-block">
-                    <p class="text-gray-400 text-sm">PREDICTED CONSTELLATION</p>
-                    <p class="text-5xl font-bold text-white font-orbitron tracking-wide">{{ prediction.class_name }}</p>
-                    <p class="text-cyan-300 text-xl mt-2">{{ prediction.confidence }} Confidence</p>
-                </div>
+            <!-- MODIFICATION: Use the image_data_url directly from the prediction data -->
+            <img src="{{ prediction_data.image_data_url }}" alt="Uploaded sky image" class="rounded-lg w-full max-w-md mb-6 border-2 border-cyan-700/50">
+            
+            <div class="text-center mb-6">
+                <p class="text-gray-400">Most Likely Constellation:</p>
+                <p class="text-4xl font-orbitron font-bold text-white">{{ prediction_data.predicted_class }}</p>
+                <p class="text-cyan-400 text-xl">{{ prediction_data.confidence }}% Confidence</p>
+            </div>
+
+            <div class="w-full max-w-md">
+                <details>
+                    <summary class="font-semibold text-cyan-400 text-lg text-center">
+                        <span class="cursor-pointer hover:underline">Show Full Probability Breakdown ▼</span>
+                    </summary>
+                    <ul class="mt-4 space-y-3 bg-gray-900/50 p-4 rounded-lg">
+                        {% for pred in prediction_data.all_predictions %}
+                        <li>
+                            <div class="flex justify-between items-center text-sm mb-1">
+                                <span class="font-semibold text-gray-300">{{ pred.class_name }}</span>
+                                <span class="text-cyan-300">{{ "%.2f"|format(pred.confidence) }}%</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2.5">
+                                <div class="bg-cyan-400 h-2.5 rounded-full" style="width: {{ pred.confidence }}%"></div>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </details>
             </div>
 
             {% else %}
             <!-- Show Default GIF -->
-            <div class="w-full max-w-md">
+            <div class="w-full max-w-md text-center">
                  <p class="text-cyan-300 text-lg mb-4">Please upload an image to begin analysis.</p>
-                 <img src="/static/background.gif" alt="Constellation animation" class="rounded-lg w-full">
+                 <img src="{{ url_for('static', filename='background.gif') }}" alt="Constellation animation" class="rounded-lg w-full">
             </div>
             {% endif %}
         </div>

@@ -1,22 +1,25 @@
 # Dockerfile
 
-# Use an official Python 3.11 runtime as a parent image, as specified in runtime.txt
-FROM python:3.11-slim
+# Start with a lightweight Python base image
+FROM python:3.9-slim
 
-# Set the working directory in the container
+# Set the working directory inside the container
 WORKDIR /app
 
-# Copy the requirements file into the container
-COPY requirements.txt .
+# Copy the requirements file into the container first
+# This helps with Docker's layer caching, speeding up future builds
+COPY requirements.txt requirements.txt
 
-# Install the Python packages
+# Install the Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application's code and model files into the container
+# Copy the rest of your application's code into the container
+# This includes app.py, your .keras model, and the static/ and templates/ folders
 COPY . .
 
-# Make port 80 available to the world outside this container
-EXPOSE 80
+# Expose the port that the application will run on
+EXPOSE 5000
 
-# Run the FastAPI application with Uvicorn when the container launches
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
+# Define the command to run your application using Gunicorn
+# Gunicorn is a production-ready web server for Python applications
+CMD ["gunicorn", "--workers", "2", "--threads", "4", "--bind", "0.0.0.0:5000", "app:app"]
